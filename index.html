@@ -7,7 +7,7 @@
     <meta name="description" content="Deployed from the RumptyCloud sample app. Replace it with your own repo whenever you're ready.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,600..800&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1080 1080' fill='none'%3E%3Crect width='1080' height='1080' rx='229.42' fill='%2315171b'/%3E%3Cpath fill='%236abdea' d='M518.21,283.53v104.18c-20.73,7.31-38.67,22.33-49.83,42.52-8.1,14.88-11.43,31.49-11.3,48.64,0,3.32-3.45,5.98-6.78,4.78-21-7.84-44.12-4.52-61.79,9.57-7.71,6.11-13.82,13.95-17.94,22.72h-87.04c-33.09,0-59.93-26.84-59.93-59.93v-172.49c0-33.09,26.84-59.93,59.93-59.93h174.75c33.09,0,59.93,26.84,59.93,59.93Z'/%3E%3Cpath fill='%2367c192' d='M856.41,373.9v82.12c0,33.09-26.84,59.93-60.07,59.93h-69.37c-1.2-2.39-2.53-4.78-3.99-7.18-15.95-25.25-46.78-35.61-74.68-25.25-1.99.66-3.99.4-5.45-.66-1.06-.93-2.13-2.52-2.13-4.78.8-49.3-34.02-88.64-79.07-94.62v-99.93c0-33.09,26.84-59.93,60.07-59.93h84.25c83.05,0,150.43,67.24,150.43,150.3Z'/%3E%3Cpath fill='%23f26b32' d='M518.21,656.15v138.2c0,33.09-26.84,59.93-59.93,59.93h-174.75c-33.09,0-59.93-26.84-59.93-59.93v-172.49c0-33.09,26.84-59.93,59.93-59.93h83.98c7.71,25.91,31.1,45.18,59.67,45.18h40.53s50.5,2.39,50.5,49.04Z'/%3E%3Cpath fill='%23f0e9d7' d='M856.41,711.7v75.61c0,36.94-30.03,66.98-66.98,66.98h-77.87c-82.79,0-149.9-67.11-149.9-149.77v-48.37s6.11-49.04,50.23-49.04h59.53c22.19,0,41.86-12.76,52.62-30.96,2.39-3.99,4.25-8.24,5.58-12.49,71.76,11.03,126.78,73.09,126.78,148.04Z'/%3E%3C/svg%3E">
     <style>
       :root {
@@ -16,6 +16,10 @@
         --ink-3: #6a7784;
         --accent: #1a8ad4;
         --leaf: #2f8a45;
+        --text: #15120d;
+        --text-2: rgba(21, 18, 13, 0.78);
+        --dusk: 0;
+        --night: 0;
         --font-display: "Bricolage Grotesque", "Space Grotesk", system-ui, sans-serif;
         --font-body: "Space Grotesk", system-ui, sans-serif;
         --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
@@ -28,7 +32,7 @@
         font-family: var(--font-body);
         background: linear-gradient(180deg, #3b98df 0%, #66b8ee 34%, #a9dbf6 66%, #e4f4fb 100%);
         -webkit-font-smoothing: antialiased;
-        overflow: hidden;
+        overflow-x: hidden;
       }
 
       .haze {
@@ -46,6 +50,90 @@
         right: 15vw;
         width: clamp(72px, 12vmin, 132px);
         aspect-ratio: 1;
+        border-radius: 50%;
+        cursor: grab;
+        touch-action: none;
+        outline: none;
+      }
+      .sun.dragging { cursor: grabbing; }
+      .sun:focus-visible .sun-core { outline: 3px solid rgba(255, 255, 255, 0.9); outline-offset: 6px; }
+      .sun-rays { opacity: calc(1 - var(--night)); }
+      .sun-core { filter: saturate(calc(1 + var(--dusk) * 0.5)) hue-rotate(calc(var(--dusk) * -22deg)); }
+      .sun-hint {
+        position: fixed;
+        z-index: 2;
+        transform: translateX(-50%) rotate(-4deg);
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(255, 250, 238, 0.86);
+        color: #15120d;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
+        pointer-events: none;
+        font-variant-numeric: tabular-nums;
+        transition: background-color 1.2s ease, color 1.2s ease;
+      }
+      .sun-hint::before { content: "\2195  "; opacity: 0.6; }
+      body.is-night .sun-hint { background: rgba(10, 18, 40, 0.7); color: #fbf3e2; }
+
+      .sky-dusk, .sky-night, .stars, .tint-dusk, .tint-night, .paper, .brush {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+      }
+      .sky-dusk {
+        background: linear-gradient(180deg, #5d4f9c 0%, #b46fa6 34%, #f1916f 64%, #ffd49a 100%);
+        opacity: calc(var(--dusk) * (1 - var(--night) * 0.6));
+      }
+      .sky-night {
+        background: linear-gradient(180deg, #081128 0%, #15264f 52%, #2d4573 100%);
+        opacity: calc(var(--night) * 0.96);
+      }
+      .stars {
+        background-image:
+          radial-gradient(1.4px 1.4px at 12% 18%, #fff 50%, transparent 51%),
+          radial-gradient(1px 1px at 26% 8%, #fff 50%, transparent 51%),
+          radial-gradient(1.6px 1.6px at 38% 26%, #fff 50%, transparent 51%),
+          radial-gradient(1px 1px at 47% 12%, #fff 50%, transparent 51%),
+          radial-gradient(1.2px 1.2px at 58% 30%, #fff 50%, transparent 51%),
+          radial-gradient(1.8px 1.8px at 66% 6%, #fff 50%, transparent 51%),
+          radial-gradient(1px 1px at 74% 22%, #fff 50%, transparent 51%),
+          radial-gradient(1.4px 1.4px at 88% 14%, #fff 50%, transparent 51%),
+          radial-gradient(1px 1px at 94% 34%, #fff 50%, transparent 51%),
+          radial-gradient(1.2px 1.2px at 6% 38%, #fff 50%, transparent 51%),
+          radial-gradient(1px 1px at 31% 42%, #fff 50%, transparent 51%),
+          radial-gradient(1.4px 1.4px at 81% 44%, #fff 50%, transparent 51%);
+        opacity: var(--night);
+        animation: twinkle 5s ease-in-out infinite;
+      }
+      .tint-dusk {
+        background: linear-gradient(180deg, transparent 20%, #ff8a4c 100%);
+        mix-blend-mode: soft-light;
+        opacity: calc(var(--dusk) * (1 - var(--night)) * 0.7);
+      }
+      .tint-night {
+        background: #13214a;
+        mix-blend-mode: multiply;
+        opacity: calc(var(--night) * 0.62);
+      }
+      .brush {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0035 0.05' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.75'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E");
+        background-size: 900px 600px;
+        mix-blend-mode: soft-light;
+        opacity: 0.55;
+      }
+      .paper {
+        z-index: 1;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.09 0 0 0 0 0.05 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        mix-blend-mode: multiply;
+        opacity: 0.2;
+      }
+      .beacon {
+        opacity: var(--night);
+        animation: blink 1.8s steps(2, jump-none) infinite;
       }
       .sun-rays {
         position: absolute;
@@ -102,6 +190,14 @@
       .land svg { display: block; width: 100%; height: 100%; overflow: visible; }
 
       @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes twinkle {
+        0%, 100% { filter: brightness(1); }
+        50% { filter: brightness(0.6); }
+      }
+      @keyframes blink {
+        0% { fill-opacity: 1; }
+        100% { fill-opacity: 0.15; }
+      }
       @keyframes glow {
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.035); }
@@ -128,99 +224,222 @@
         position: relative;
         z-index: 2;
         min-height: 100vh;
-        display: grid;
-        justify-items: center;
-        align-items: start;
-        padding: clamp(24px, 9vh, 110px) 20px 40vh;
+        padding: clamp(18px, 3vh, 30px) clamp(20px, 4.5vw, 64px) 32vh;
+        color: var(--text);
+        pointer-events: none;
+        transition: color 1.2s ease;
       }
-      .card {
-        width: min(100%, 500px);
-        padding: 26px 30px 20px;
-        border: 1px solid rgba(255, 255, 255, 0.75);
-        border-radius: 22px;
-        background: rgba(255, 252, 245, 0.72);
-        -webkit-backdrop-filter: blur(16px) saturate(1.3);
-        backdrop-filter: blur(16px) saturate(1.3);
-        box-shadow:
-          0 1px 0 rgba(255, 255, 255, 0.9) inset,
-          0 30px 70px -20px rgba(20, 70, 110, 0.35);
-        animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-      }
-      .card-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 22px;
-      }
+      .shell a, .shell button { pointer-events: auto; }
+      body.is-night { --text: #fbf3e2; --text-2: rgba(251, 243, 226, 0.82); }
+
       .brand {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 10px;
         font-family: var(--font-display);
-        font-size: 17px;
+        font-size: 18px;
         font-weight: 800;
         letter-spacing: -0.025em;
-        color: var(--ink);
+        color: inherit;
         text-decoration: none;
       }
       .brand svg { width: 32px; height: 32px; border-radius: 8px; display: block; }
       .brand-accent { color: var(--accent); }
-      .status {
+      body.is-night .brand-accent { color: #7cc4f0; }
+
+      .stage {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+        gap: 40px;
+        max-width: 1240px;
+        margin-top: clamp(28px, 9vh, 110px);
+      }
+      .hero { min-width: 0; animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+      .kicker {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 6px 12px 6px 10px;
-        border-radius: 999px;
-        background: rgba(47, 138, 69, 0.11);
-        color: var(--leaf);
+        gap: 9px;
+        margin: 0;
         font-family: var(--font-mono);
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 500;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
-        white-space: nowrap;
+        color: var(--text-2);
       }
       .status-dot {
-        width: 7px;
-        height: 7px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
-        background: var(--leaf);
+        background: #3fb85f;
         animation: pulse 2s ease-out infinite;
       }
       h1 {
-        margin: 0;
+        margin: 12px 0 0;
         font-family: var(--font-display);
-        font-size: clamp(32px, min(6.4vw, 6.6vh), 54px);
-        line-height: 1.02;
-        font-weight: 700;
-        letter-spacing: -0.03em;
-        text-wrap: balance;
+        font-size: clamp(60px, min(10vw, 13vh), 136px);
+        font-variation-settings: "opsz" 96;
+        font-weight: 800;
+        line-height: 0.92;
+        letter-spacing: -0.05em;
       }
-      .lede {
-        margin: 14px 0 0;
-        font-size: 16px;
-        line-height: 1.55;
-        color: var(--ink-2);
-        text-wrap: pretty;
-      }
-      .foot {
-        display: flex;
+      h1 .dot { color: var(--accent); }
+      body.is-night h1 .dot { color: #7cc4f0; }
+
+      .address {
+        display: inline-flex;
         align-items: center;
-        gap: 10px;
-        margin: 20px 0 0;
-        padding-top: 14px;
-        border-top: 1px solid rgba(20, 32, 43, 0.08);
+        gap: 6px;
+        max-width: 100%;
+        margin-top: clamp(16px, 2.4vh, 24px);
+        padding: 6px 6px 6px 16px;
+        border-radius: 14px;
+        background: rgba(255, 250, 238, 0.9);
+        color: #15120d;
+        box-shadow: 0 16px 34px -18px rgba(20, 30, 40, 0.6);
+      }
+      .address a {
+        overflow: hidden;
+        font-family: var(--font-mono);
+        font-size: clamp(14px, 1.7vw, 19px);
+        color: inherit;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .address a:hover .host { text-decoration: underline; text-underline-offset: 4px; }
+      .address .scheme { color: #8a8174; }
+      .copy {
+        flex-shrink: 0;
+        padding: 9px 13px;
+        border: 0;
+        border-radius: 9px;
+        background: #15120d;
+        color: #fbf3e2;
         font-family: var(--font-mono);
         font-size: 12px;
-        color: var(--ink-3);
+        cursor: pointer;
+        pointer-events: auto;
       }
-      .foot svg { flex-shrink: 0; }
+      .copy:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
-      @media (max-width: 520px) {
-        .card { padding: 22px 20px 18px; border-radius: 18px; }
-        .card-top { margin-bottom: 18px; }
-        .lede { font-size: 15px; }
+      .receipt {
+        position: relative;
+        width: 300px;
+        padding: 20px 22px 30px;
+        background: #fffaf0;
+        color: #2a251d;
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        line-height: 1.5;
+        transform: rotate(var(--tilt));
+        box-shadow: 0 26px 50px -26px rgba(20, 30, 40, 0.7);
+        pointer-events: auto;
+        -webkit-mask: radial-gradient(7px at 50% 100%, #0000 97%, #000) 50% / 16px 100%;
+        mask: radial-gradient(7px at 50% 100%, #0000 97%, #000) 50% / 16px 100%;
+        animation: print 0.9s 0.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+        --tilt: 1.6deg;
+      }
+      @keyframes print {
+        from { opacity: 0; transform: translateY(-18px) rotate(0deg); }
+        to { opacity: 1; transform: rotate(var(--tilt)); }
+      }
+      .receipt h2 {
+        display: flex;
+        justify-content: space-between;
+        margin: 0 0 14px;
+        padding-bottom: 12px;
+        border-bottom: 1px dashed #cfc5b3;
+        font: inherit;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #7a705f;
+      }
+      .receipt dl {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px 16px;
+        margin: 0;
+      }
+      .receipt dt { color: #7a705f; }
+      .receipt dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+      .receipt .total {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px dashed #cfc5b3;
+        font-weight: 500;
+        font-size: 13.5px;
+      }
+      .receipt .thanks {
+        margin: 16px 0 0;
+        text-align: center;
+        font-size: 11px;
+        color: #9a9080;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+      .lede {
+        max-width: 31em;
+        margin: clamp(16px, 2.6vh, 26px) 0 0;
+        font-size: clamp(17px, 2.3vh, 21px);
+        font-weight: 500;
+        line-height: 1.45;
+        color: var(--text-2);
+        text-wrap: pretty;
+      }
+
+      .ctas {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px 14px;
+        margin-top: clamp(20px, 3.4vh, 34px);
+      }
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 20px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+      .cta:hover { transform: translateY(-2px); }
+      .cta:active { transform: translateY(0); }
+      .cta:focus-visible { outline: 3px solid #15120d; outline-offset: 3px; }
+      .cta-primary {
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 14px 30px -14px rgba(13, 70, 110, 0.9);
+      }
+      .cta-ghost {
+        background: rgba(255, 250, 238, 0.88);
+        color: #15120d;
+      }
+      .cta > span { display: inline-flex; align-items: center; gap: 10px; line-height: 1; }
+      .cta svg { display: block; width: 17px; height: 17px; flex-shrink: 0; }
+
+      @media (max-width: 900px) {
+        .stage { grid-template-columns: 1fr; gap: 28px; }
+        .receipt { --tilt: -1deg; }
+      }
+      @media (max-width: 560px) {
+        .shell { padding-bottom: 22vh; }
+        .cta { flex: 1 1 100%; justify-content: center; }
+        .address { width: 100%; }
+        .receipt { width: 100%; }
       }
       .gloom {
         position: fixed;
@@ -274,14 +493,6 @@
       body[data-weather="clearing"] .rainbow { opacity: 0.75; }
       body[data-weather="clearing"] .land { filter: brightness(1.02) saturate(1.08); }
 
-      .foot-rain { display: none; }
-      body[data-weather="overcast"] .foot-sun,
-      body[data-weather="rain"] .foot-sun { display: none; }
-      body[data-weather="overcast"] .foot-rain,
-      body[data-weather="rain"] .foot-rain { display: inline-flex; }
-      .foot span { align-items: center; gap: 10px; }
-      .foot-sun { display: inline-flex; }
-
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { animation: none !important; }
       }
@@ -314,7 +525,11 @@
     </svg>
 
     <div class="haze" aria-hidden="true"></div>
-    <div class="sun" aria-hidden="true">
+    <div class="brush" aria-hidden="true"></div>
+    <div class="sky-dusk" aria-hidden="true"></div>
+    <div class="sky-night" aria-hidden="true"></div>
+    <div class="stars" aria-hidden="true"></div>
+    <div class="sun" role="slider" tabindex="0" aria-label="Time of day. Drag the sun or use the arrow keys." aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="Midday">
       <div class="sun-rays"></div>
       <div class="sun-core"></div>
     </div>
@@ -354,6 +569,8 @@
         <path d="M54 6 Q58 1 62 6 Q66 1 70 6"><animate attributeName="d" dur="0.8s" repeatCount="indefinite" values="M54 6 Q58 1 62 6 Q66 1 70 6;M54 5 Q58 9 62 6 Q66 9 70 5;M54 6 Q58 1 62 6 Q66 1 70 6" /></path>
       </svg>
     </div>
+
+    <span class="sun-hint" aria-hidden="true">12:00</span>
 
     <div class="land" aria-hidden="true">
       <svg viewBox="0 0 1440 520" preserveAspectRatio="xMidYMax slice">
@@ -492,17 +709,17 @@
         <g opacity="0.75">
           <g transform="translate(620 176) scale(0.2)">
             <use href="#tower" />
-            <g><use href="#blades" /><animateTransform attributeName="transform" type="rotate" from="20" to="380" dur="9s" repeatCount="indefinite" /></g>
+            <g class="rotor" data-from="20" data-dur="9"><use href="#blades" /></g>
             <circle r="9" fill="#fff" />
           </g>
           <g transform="translate(985 172) scale(0.22)">
             <use href="#tower" />
-            <g><use href="#blades" /><animateTransform attributeName="transform" type="rotate" from="70" to="430" dur="8s" repeatCount="indefinite" /></g>
+            <g class="rotor" data-from="70" data-dur="8"><use href="#blades" /></g>
             <circle r="9" fill="#fff" />
           </g>
           <g transform="translate(1055 180) scale(0.19)">
             <use href="#tower" />
-            <g><use href="#blades" /><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="10s" repeatCount="indefinite" /></g>
+            <g class="rotor" data-from="0" data-dur="10"><use href="#blades" /></g>
             <circle r="9" fill="#fff" />
           </g>
         </g>
@@ -511,18 +728,21 @@
 
         <g transform="translate(860 150) scale(0.48)">
           <use href="#tower" />
-          <g><use href="#blades" /><animateTransform attributeName="transform" type="rotate" from="40" to="400" dur="6.5s" repeatCount="indefinite" /></g>
+          <g class="rotor" data-from="40" data-dur="6.5"><use href="#blades" /></g>
           <circle r="8" fill="#fff" stroke="#c9d3da" stroke-width="1.5" />
+          <circle class="beacon" cx="6" cy="-14" r="9" fill="#ff4b3e" />
         </g>
         <g transform="translate(1330 110) scale(0.56)">
           <use href="#tower" />
-          <g><use href="#blades" /><animateTransform attributeName="transform" type="rotate" from="90" to="450" dur="7.5s" repeatCount="indefinite" /></g>
+          <g class="rotor" data-from="90" data-dur="7.5"><use href="#blades" /></g>
           <circle r="8" fill="#fff" stroke="#c9d3da" stroke-width="1.5" />
+          <circle class="beacon" cx="6" cy="-14" r="9" fill="#ff4b3e" />
         </g>
         <g transform="translate(1170 60) scale(0.72)">
           <use href="#tower" />
-          <g><use href="#blades" /><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="6s" repeatCount="indefinite" /></g>
+          <g class="rotor" data-from="0" data-dur="6"><use href="#blades" /></g>
           <circle r="8" fill="#fff" stroke="#c9d3da" stroke-width="1.5" />
+          <circle class="beacon" cx="6" cy="-14" r="9" fill="#ff4b3e" />
         </g>
 
         <path d="M0 372 C260 346 560 362 820 356 C1080 350 1280 336 1440 346 V520 H0 Z" fill="url(#field)" />
@@ -588,10 +808,12 @@
     </div>
 
     <canvas class="rain" aria-hidden="true"></canvas>
+    <div class="tint-dusk" aria-hidden="true"></div>
+    <div class="tint-night" aria-hidden="true"></div>
+    <div class="paper" aria-hidden="true"></div>
 
     <main class="shell">
-      <div class="card">
-        <div class="card-top">
+      <header>
           <span class="brand">
             <svg viewBox="0 0 1080 1080" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <rect width="1080" height="1080" rx="229.42" fill="#15171b"/>
@@ -602,24 +824,202 @@
             </svg>
             <span>Rumpty<span class="brand-accent">Cloud</span></span>
           </span>
-          <span class="status"><span class="status-dot"></span>Live</span>
+      </header>
+      <div class="stage">
+      <section class="hero">
+        <p class="kicker"><span class="status-dot"></span>Your first deploy</p>
+        <h1><span class="sr-only">RumptyCloud sample app: </span>You're live<span class="dot">.</span></h1>
+        <div class="address">
+          <a href="/"><span class="scheme">https://</span><span class="host">your-app.rumptycloud.app</span></a>
+          <button class="copy" type="button">Copy</button>
         </div>
-        <h1>You're live on Rumpty<span class="brand-accent">Cloud</span>.</h1>
-        <p class="lede">This page was deployed from the official sample. Replace it with your own repo whenever you're ready.</p>
-        <p class="foot">
-          <span class="foot-sun">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e0a21a" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="#ffd45a" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
-            running on sunshine and a light breeze
-          </span>
-          <span class="foot-rain">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f86b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 15a4 4 0 0 1-.6-7.96A5.5 5.5 0 0 1 17 7.5a3.75 3.75 0 0 1 .5 7.47" fill="#dbe7f2" /><path d="M9 18l-1 2M13 18l-1 2M17 18l-1 2" /></svg>
-            still up, rain or shine
-          </span>
-        </p>
+        <p class="lede">Your app is up and running on RumptyCloud, complete with HTTPS and a public URL. No complicated setup. Ready to deploy something of your own?</p>
+        <div class="ctas">
+          <a class="cta cta-primary" href="https://console.rumptycloud.com/deployments/new?source=github">
+            <span>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+              Deploy your own repo
+            </span>
+          </a>
+          <a class="cta cta-ghost" href="https://console.rumptycloud.com/deployments">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" /></svg>
+              Back to the console
+            </span>
+          </a>
+        </div>
+      </section>
+
+      <aside class="receipt" aria-label="Details for this visit">
+        <h2><span>This visit</span><span data-r="date">today</span></h2>
+        <dl>
+          <dt>status</dt><dd data-r="status">200 OK</dd>
+          <dt>served in</dt><dd data-r="served">—</dd>
+          <dt>protocol</dt><dd data-r="protocol">—</dd>
+          <dt>page size</dt><dd data-r="size">—</dd>
+          <dt>scene time</dt><dd data-r="time">12:00</dd>
+        </dl>
+        <div class="total"><span>running on</span><span data-r="power">solar ☀</span></div>
+        <p class="thanks">thanks for deploying</p>
+      </aside>
       </div>
     </main>
 
     <script>
+      (function () {
+        var sun = document.querySelector(".sun");
+        var hint = document.querySelector(".sun-hint");
+        var root = document.documentElement;
+        var body = document.body;
+        var HIGH = 0.1;
+        var HORIZON = 0.74;
+        var fx = 0;
+        var fy = 0;
+        var grab = null;
+
+        function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+        function smooth(a, b, v) {
+          var t = clamp((v - a) / (b - a), 0, 1);
+          return t * t * (3 - 2 * t);
+        }
+
+        function place() {
+          var size = sun.offsetWidth;
+          sun.style.right = "auto";
+          sun.style.left = fx * window.innerWidth - size / 2 + "px";
+          sun.style.top = fy * window.innerHeight - size / 2 + "px";
+          hint.style.left = fx * window.innerWidth + "px";
+          hint.style.top = fy * window.innerHeight + size / 2 + 16 + "px";
+
+          var t = clamp((fy - HIGH) / (HORIZON - HIGH), 0, 1);
+          var dusk = smooth(0.45, 0.82, t);
+          var night = smooth(0.8, 1, t);
+          root.style.setProperty("--dusk", dusk.toFixed(3));
+          root.style.setProperty("--night", night.toFixed(3));
+          body.classList.toggle("is-night", night > 0.5);
+          sun.setAttribute("aria-valuenow", String(Math.round(t * 100)));
+          var minutes = realMinutes != null ? realMinutes : Math.round((12 + t * 9) * 60 / 5) * 5;
+          var clock = Math.floor(minutes / 60) + ":" + String(minutes % 60).padStart(2, "0");
+          hint.textContent = clock;
+          receipt("time", clock);
+          sun.setAttribute("aria-valuetext", clock);
+          updatePower();
+        }
+
+        function moveTo(x, y) {
+          realMinutes = null;
+          fx = clamp(x, 0.05, 0.95);
+          fy = clamp(y, 0.06, HORIZON);
+          place();
+        }
+
+        function receipt(key, value) {
+          var el = document.querySelector('[data-r="' + key + '"]');
+          if (el) el.textContent = value;
+        }
+
+        function updatePower() {
+          var weather = body.getAttribute("data-weather");
+          receipt("power", body.classList.contains("is-night") ? "battery ☾"
+            : weather === "rain" || weather === "overcast" ? "wind ≋"
+            : "solar ☀");
+        }
+        new MutationObserver(updatePower).observe(body, { attributes: true, attributeFilter: ["data-weather"] });
+
+        if (location.hostname) {
+          document.querySelector(".address .scheme").textContent = location.protocol + "//";
+          document.querySelector(".address .host").textContent = location.host;
+        }
+        var copy = document.querySelector(".copy");
+        copy.addEventListener("click", function () {
+          if (!navigator.clipboard) return;
+          navigator.clipboard.writeText(location.origin).then(function () {
+            copy.textContent = "Copied";
+            setTimeout(function () { copy.textContent = "Copy"; }, 1600);
+          });
+        });
+
+        var nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
+        if (nav) {
+          if (nav.responseStatus) receipt("status", nav.responseStatus + (nav.responseStatus === 200 ? " OK" : ""));
+          if (nav.responseEnd > 0) receipt("served", Math.max(1, Math.round(nav.responseEnd - nav.requestStart)) + " ms");
+          var protocols = { h2: "HTTP/2", h3: "HTTP/3", "http/1.1": "HTTP/1.1" };
+          var protocol = protocols[nav.nextHopProtocol] || (nav.nextHopProtocol || "http").toUpperCase();
+          receipt("protocol", protocol + (location.protocol === "https:" ? " + TLS" : ""));
+          if (nav.decodedBodySize) receipt("size", (nav.decodedBodySize / 1024).toFixed(1) + " KB");
+        }
+        receipt("date", new Date().toLocaleDateString(undefined, { day: "numeric", month: "short" }));
+
+        var now = new Date();
+        var hours = now.getHours() + now.getMinutes() / 60;
+        var realMinutes = now.getHours() * 60 + now.getMinutes();
+        fx = window.innerWidth > 900 ? 0.55 : 0.8;
+        fy = HIGH + clamp(Math.abs(hours - 12) / 9, 0, 1) * (HORIZON - HIGH);
+        place();
+
+        sun.addEventListener("pointerdown", function (e) {
+          e.preventDefault();
+          sun.setPointerCapture(e.pointerId);
+          sun.classList.add("dragging");
+          grab = {
+            dx: e.clientX - fx * window.innerWidth,
+            dy: e.clientY - fy * window.innerHeight
+          };
+        });
+        sun.addEventListener("pointermove", function (e) {
+          if (!grab) return;
+          moveTo((e.clientX - grab.dx) / window.innerWidth, (e.clientY - grab.dy) / window.innerHeight);
+        });
+        function release() {
+          grab = null;
+          sun.classList.remove("dragging");
+        }
+        sun.addEventListener("pointerup", release);
+        sun.addEventListener("pointercancel", release);
+
+        sun.addEventListener("keydown", function (e) {
+          var step = 0.04;
+          var moves = {
+            ArrowDown: [0, step], ArrowRight: [0, step],
+            ArrowUp: [0, -step], ArrowLeft: [0, -step],
+            End: [0, 1], Home: [0, -1]
+          };
+          var m = moves[e.key];
+          if (!m) return;
+          e.preventDefault();
+          moveTo(fx, fy + m[1]);
+        });
+
+        window.addEventListener("resize", place);
+      })();
+
+      (function () {
+        var rotors = Array.prototype.slice.call(document.querySelectorAll(".rotor"));
+        var wind = { sun: 1, clearing: 1.5, overcast: 2.4, rain: 3.4 };
+        var speed = 1;
+        var last = performance.now();
+
+        rotors.forEach(function (rotor) {
+          rotor.angle = Number(rotor.dataset.from);
+          rotor.rate = 360 / Number(rotor.dataset.dur);
+          rotor.setAttribute("transform", "rotate(" + rotor.angle + ")");
+        });
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        function frame(now) {
+          var dt = Math.min((now - last) / 1000, 0.05);
+          last = now;
+          var target = wind[document.body.getAttribute("data-weather")] || 1;
+          speed += (target - speed) * Math.min(1, dt * 0.5);
+          rotors.forEach(function (rotor) {
+            rotor.angle = (rotor.angle + rotor.rate * speed * dt) % 360;
+            rotor.setAttribute("transform", "rotate(" + rotor.angle.toFixed(2) + ")");
+          });
+          requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      })();
+
       (function () {
         var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         if (reduced) {
