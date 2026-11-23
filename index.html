@@ -230,6 +230,7 @@
         transition: color 1.2s ease;
       }
       .shell a, .shell button { pointer-events: auto; }
+      .shell > header, .stage { max-width: 1240px; margin-inline: auto; }
       body.is-night { --text: #fbf3e2; --text-2: rgba(251, 243, 226, 0.82); }
 
       .brand {
@@ -250,9 +251,8 @@
       .stage {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        align-items: end;
-        gap: 40px;
-        max-width: 1240px;
+        align-items: center;
+        gap: clamp(40px, 6vw, 96px);
         margin-top: clamp(28px, 9vh, 110px);
       }
       .hero { min-width: 0; animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
@@ -282,7 +282,7 @@
         font-variation-settings: "opsz" 96;
         font-weight: 800;
         line-height: 0.92;
-        letter-spacing: -0.05em;
+        letter-spacing: -0.03em;
       }
       h1 .dot { color: var(--accent); }
       body.is-night h1 .dot { color: #7cc4f0; }
